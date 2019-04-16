@@ -19,7 +19,6 @@ public class ExcelEntityTest {
 		System.out.println(json);
 		System.out.println(json.toJSONString());
 		System.out.println(json.toJSONString());
-		System.out.println(json.toJSONString());
 		
 	}
 	
