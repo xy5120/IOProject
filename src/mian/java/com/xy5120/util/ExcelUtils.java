@@ -19,27 +19,15 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.alibaba.fastjson.JSONObject;
+import com.xy5120.entity.ExcelEntity;
+
 public class ExcelUtils {
 //我是一个测试
 	public static void main(String[] args) {
-		String path = "C:\\Users\\Administrator\\Desktop\\目录.xls";
-		// get();
-		// String value = getVal(path, 1, 3, 3);
-		List<ArrayList<String[]>> valLsit = getAllVal(path);
-		// sheet
-		for (ArrayList<String[]> arrayList : valLsit) {
-			// 行
-			for (String[] val : arrayList) {
-				// 列
-				for (int i = 0; i < val.length; i++) {
-					if (val[i] == null || "".equals(val[i])) {
-						System.out.print("\t");
-					}
-					System.out.print(val[i] + "--");
-				}
-				System.out.println();
-			}
-		}
+		String ePath = "test1.xls";
+		String pPath="test.properties";
+		Excel2Properties(ePath,pPath);
 	}
 
 	/**
@@ -83,49 +71,68 @@ public class ExcelUtils {
 	 * @return List<ArrayList<String[]>> 外层list存储sheet表，里层list存储行数据，String[]存储列内容
 	 * @throws IOException
 	 */
-	public static List<ArrayList<String[]>> getAllVal(String path) {
-		// 定义返回容器
-		List<ArrayList<String[]>> lists = new ArrayList<ArrayList<String[]>>();
-		ArrayList<String[]> list = null;
-		String[] valArray = null;
-
+	public static Map<String,JSONObject> Excel2Properties(String ePath,String pPath) {
+		//返回的集合
+		Map<String, JSONObject> map=new HashMap<String ,JSONObject>();
+		int totalRow=0;//以0开始
+		int totalCell=0;//以1开始
+		JSONObject json=null;
+		ExcelEntity excel=null;
+		//序号no,图号sheetNo,图名description,图幅sheet
 		try {
 			// 创建poi实例
-			POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(path));
+			POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(ePath));
 			HSSFWorkbook wb = new HSSFWorkbook(fs);
 			// 遍历sheet
 			for (int sheetNum = 0; sheetNum < wb.getNumberOfSheets(); sheetNum++) {
 				HSSFSheet hssfSheet = wb.getSheetAt(sheetNum);
 				if (hssfSheet == null) {
-
 					continue;
 				}
+				totalRow = hssfSheet.getLastRowNum();
 				// 遍历row
-				for (int rowNum = 0; rowNum < hssfSheet.getLastRowNum(); rowNum++) {
-					// 获取当前行
+				for (int rowNum = 0; rowNum <= totalRow; rowNum++) {
 					HSSFRow row = hssfSheet.getRow(rowNum);
-					list = new ArrayList<String[]>();
-					if (row == null) {
-						continue;
+					totalCell=row.getLastCellNum();
+					//System.out.println("totalRow:"+totalRow+"--totalCell:"+totalCell);
+					//4列数据为一组，超过4列就控制大的循环
+					for (int j = 0; j < (totalCell%4!=0?totalCell/4+1:totalCell/4); j++) {
+						//循环4次，获取对应4列的数据
+						//j 0 1 2    0  4  8  12          /1 5 8/2 6 9/3 7 10 
+						//System.out.println("循环："+j+"次");
+						//System.out.println("no的值"+String.valueOf(j*4));
+						excel=new ExcelEntity();
+						String no = formatCell(row.getCell(j*4), wb);
+						//System.out.print("no:"+no);
+						excel.setNo(no);
+						String sheetNo = formatCell(row.getCell(j*4+1), wb);
+						//System.out.print("sheetNo:"+sheetNo+"--"+(j*4+1));
+						excel.setSheetNo(sheetNo);
+						String description = formatCell(row.getCell(j*4+2), wb);
+						//System.out.print("description:"+description);
+						excel.setDescription(description);
+						String sheet = formatCell(row.getCell(j*4+3), wb);
+						//System.out.print("sheet:"+sheet);
+						excel.setSheet(sheet);
+						
+						//将数据转json存储，index为存储的key序号
+						json=new JSONObject();
+						String index = String.valueOf((((totalRow+1)*(j+1))-totalRow)+rowNum);
+						json.put(index, excel);
+						System.out.println(json);
+						//写入数据到配置文件
+						map.put(index, json);
+						//PropertiesUtils.write2Properties(index, json.toJSONString(), pPath);
+						return map;
 					}
-					// 定义数组大小
-					valArray = new String[row.getLastCellNum()];
-					// 遍历cell
-					for (int cellNum = 0; cellNum < row.getLastCellNum(); cellNum++) {
-						String val = formatCell(row.getCell(cellNum), wb);
-						System.out.println(val);
-						valArray[cellNum] = val;
-					}
-					list.add(valArray);
 				}
-				lists.add(list);
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return lists;
+		return map;
 
 	}
 
@@ -158,11 +165,6 @@ public class ExcelUtils {
 		System.out.println(Count);
 		System.out.println(map.size());
 
-		/*
-		 * Iterator<Map.Entry<String, String>> it = map.entrySet().iterator(); while
-		 * (it.hasNext()) { Map.Entry<String, String> entry = it.next();
-		 * System.out.println("姓名： " +entry.getValue() + " ___电话 " + entry.getKey()); }
-		 */
 	}
 
 	/**

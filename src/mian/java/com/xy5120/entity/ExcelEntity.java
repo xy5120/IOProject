@@ -2,37 +2,48 @@ package com.xy5120.entity;
 
 public class ExcelEntity {
 
-	private String number;
-	private String title;
-	private String pictureNumber;
-	
-	
-	public ExcelEntity() {
-		
+	//序号no,图号sheetNo,图名description,图幅sheet	
+	private String no;
+	private String SheetNo;
+	private String description;
+	private String sheet;
+	public String getNo() {
+		return no;
 	}
-	public ExcelEntity(String number, String title, String pictureNumber) {
+	public void setNo(String no) {
+		this.no = no;
+	}
+	public String getSheetNo() {
+		return SheetNo;
+	}
+	public void setSheetNo(String sheetNo) {
+		SheetNo = sheetNo;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	public String getSheet() {
+		return sheet;
+	}
+	public void setSheet(String sheet) {
+		this.sheet = sheet;
+	}
+	public ExcelEntity(String no, String sheetNo, String description, String sheet) {
 		super();
-		this.number =number;
-		this.title = title;
-		this.pictureNumber = pictureNumber;
+		this.no = no;
+		SheetNo = sheetNo;
+		this.description = description;
+		this.sheet = sheet;
 	}
-	public String getNumber() {
-		return number;
+	public ExcelEntity() {
 	}
-	public void setNumber(String number) {
-		this.number = number;
-	}
-	public String getTitle() {
-		return title;
-	}
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	public String getPictureNumber() {
-		return pictureNumber;
-	}
-	public void setPictureNumber(String pictureNumber) {
-		this.pictureNumber = pictureNumber;
+	@Override
+	public String toString() {
+		return "ExcelEntity [no=" + no + ", SheetNo=" + SheetNo + ", description=" + description + ", sheet=" + sheet
+				+ "]";
 	}
 	
 	

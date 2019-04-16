@@ -5,10 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 /**
@@ -24,7 +27,10 @@ public class PropertiesUtils {
 	private static FileOutputStream fo = null;
 
 	public static void main(String[] args) {
-		String path = "title.properties";
+		//PropertiesUtils.write2Properties("key", "我是输入内容", "te.properties");
+		Map<String, JSONObject> all = PropertiesUtils.getAll("test.properties");
+		System.out.println(all.size());
+		/*String path = "title.properties";
 		Properties pro = new Properties();
 		FileInputStream in = null;
 		try {
@@ -50,23 +56,53 @@ public class PropertiesUtils {
 					e.printStackTrace();
 				}
 			}
-		}
+		}*/
 
 	}
 
-	public static String getAll(String path) {
+	/**
+	 * 
+	 *  Description:将数据写入
+	 *  @author xy  DateTime 2019年4月16日 下午9:05:40
+	 */
+	public static void write2Properties(String key,String value,String pPath) {
+		Properties p = getPro(pPath);
+		p.put(key, value);
+		try {
+			p.store(getFO(pPath), "");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			closeAll(fi, fo);
+		}
+		
+	}
+	private static FileOutputStream getFO(String path) {
+		try {
+			return new FileOutputStream(new File(path));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return fo;
+	}
+	public static Map<String, JSONObject> getAll(String path) {
+		Map<String,JSONObject> map=new HashMap<String,JSONObject>();
+		
 		Properties p = getPro(path);
 		Set<Object> keys = p.keySet();
 		Iterator<Object> it = keys.iterator();
 		JSONObject json=new JSONObject();
 		while (it.hasNext()) {
-			String next = (String) it.next();
-			json.put("index", next);
+			String key = (String) it.next();
+			json.put(key, p.get(key));
+			map.put(key, JSON.parseObject((String)p.get(key)));
 		}
-		
+		System.out.println(json);
 		
 		closeAll(fi, fo);
-		return null;
+		return map;
 	}
 
 	/**
@@ -107,7 +143,12 @@ public class PropertiesUtils {
 	private static Properties getPro(String path) {
 		Properties p = new Properties();
 		try {
-			fi = new FileInputStream(new File(path));
+			File file = new File(path);
+			if(!file.exists()) {
+				boolean createNewFile = file.createNewFile();
+				System.out.println(path+"。文件不存在，创建文件"+createNewFile);
+			}
+			fi = new FileInputStream(file);
 			p.load(fi);
 			return p;
 		} catch (FileNotFoundException e) {
