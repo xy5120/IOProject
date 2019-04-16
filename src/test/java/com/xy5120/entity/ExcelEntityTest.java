@@ -18,6 +18,8 @@ public class ExcelEntityTest {
 		System.out.println("完成json转换");
 		System.out.println(json);
 		System.out.println(json.toJSONString());
+		System.out.println(json.toJSONString());
+		System.out.println(json.toJSONString());
 		
 	}
 	
