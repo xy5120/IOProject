@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.alibaba.fastjson.JSONObject;
+import com.xy5120.entity.ExcelEntity;
 import com.xy5120.util.ExcelUtils;
 import com.xy5120.util.FileUtils;
 
@@ -12,7 +13,9 @@ public class CADRename {
 
 	public static Properties p=null;
 	public static void main(String[] args) {
-		
+		String epath="menu.xls";
+		String renamePath="G:\\001华翔宇\\000workspace\\git\\IOProject\\PDF";
+		fromExcel2Rename(epath,renamePath);
 	}
 
 	/**
@@ -22,8 +25,8 @@ public class CADRename {
 	 *  @param ePath excel的路径
 	 *  @param pPath 配置文件的路径
 	 */
-	public void fromExcel2Rename(String ePath,String renamePath) {
-		Map<String, JSONObject> map = ExcelUtils.Excel2Properties(ePath, null);
+	public static void fromExcel2Rename(String ePath,String renamePath) {
+		Map<String, ExcelEntity> map = ExcelUtils.Excel2Map(ePath, null);
 		//保存的文件夹路径
 		String newPath=renamePath+File.separator+"重命名文件";
 		File newPakage = new File(newPath);
@@ -38,19 +41,24 @@ public class CADRename {
 		File[] listFiles = file.listFiles();
 		for (int i=1;i<=map.size();i++) {
 			//序号no,图号sheetNo,图名description,图幅sheet
-			JSONObject jsonObject = map.get(String.valueOf(i));
-			String description = (String)jsonObject.get("description");
-			int no = (int)jsonObject.get("no");
-			String sheet = (String)jsonObject.get("sheet");
+			ExcelEntity excel = map.get(String.valueOf(i));
+			String description = excel.getDescription();
+			int no = Double.valueOf(excel.getNo()).intValue();
+			String sheet = excel.getSheet();
+			String sheetNo = excel.getSheetNo();
+			//String no = (String)jsonObject.get("no");
+			//int no = Integer.parseInt((String)jsonObject.get("no"));
+			//String sheet = (String)jsonObject.get("sheet");
 			//获取文件格式
-			String fileFormat = FileUtils.getFileFormat(listFiles[i]);
+			String fileFormat = FileUtils.getFileFormat(listFiles[i-1]);
 			//设置文件名--平面图
-			String newFileName=sheet+"-装饰Z"+String.format("%03d", no)+"_"+description+"."+fileFormat;
+			String newFileName="装饰Z"+String.format("%03d", no)+"_"+description+"_"+sheet+"."+fileFormat;
 			//开始复制
-			boolean flog = FileUtils.CopyFile(listFiles[i], new File(newPath+File.separator+newFileName));
-			if(flog) {
+			System.out.println("第"+i+"个，名字为："+newFileName);
+			boolean flog = FileUtils.CopyFile(listFiles[i-1], new File(newPath+File.separator+newFileName));
+			if(!flog) {
 				//出现错误
-				System.out.println("错误：第"+i+"个文件重命名失败，文件名是："+listFiles[i].getName());
+				System.out.println("错误：第"+i+"个文件重命名失败，文件名是："+listFiles[i-1].getName());
 			}
 		}
 		
